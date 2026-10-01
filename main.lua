@@ -30,9 +30,9 @@ function love.load(args)
         love.window.setPosition(-1, -1)
         --If the string doesn't end with long space, the error message is only partially displayed
         if mode == "/p" then
-            love.window.showMessageBox("Whoops!", "Preview mode is unsupported.\nThis shows up a lot, sorry.                  ", "error")
+            love.window.showMessageBox("Whoops!", "Windows called \"/p\".\nPreview mode is unsupported.\nThis shows up a lot, sorry.                  ", "error")
         elseif mode == "/c" then
-            love.window.showMessageBox("Whoops!", "Configuration mode is unsupported.             ", "error")
+            love.window.showMessageBox("Lovely Screensaver", "This screensaver has no configuration settings.             ", "info")
         end
         love.event.quit()
     end
