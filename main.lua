@@ -18,16 +18,22 @@ function love.load(args)
     }
 
     local mode = args[1]
+    mode = string.sub(mode, 1, 2) --Windows passes a longer string for "/c:....", only the first 2 characters are relevant.
 
     if mode == "/s" then
         actuallydisplay = true
-    elseif mode == "/p" then
-        actuallydisplay = true
-    elseif mode == "/c" then
-        love.window.showMessageBox("Unsupported!", "This screensaver does not support configuration mode.", "error")
     end
 
     if not actuallydisplay then
+        love.window.setFullscreen(false)
+        love.window.setMode(1, 1, {borderless = true})
+        love.window.setPosition(-1, -1)
+        --If the string doesn't end with long space, the error message is only partially displayed
+        if mode == "/p" then
+            love.window.showMessageBox("Whoops!", "Preview mode is unsupported.\nThis shows up a lot, sorry.                  ", "error")
+        elseif mode == "/c" then
+            love.window.showMessageBox("Whoops!", "Configuration mode is unsupported.             ", "error")
+        end
         love.event.quit()
     end
 
