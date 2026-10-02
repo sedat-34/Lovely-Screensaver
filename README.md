@@ -18,7 +18,7 @@ The following table denotes what happens when an argument ("MODE") is passed by 
 1) Install or download LÖVE 11.5.
 2) Add LÖVE to your path. The screensaver does not work otherwise as of now.
 3) In conf.lua, set a unique t.identity for your screensaver. This is for future compatibility.
-4) Package main.lua and conf.lua into an executable following [this official guide](https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable). Name it as you desire, but make sure to change the extension to .scr after fusing the executable.
+4) Package main.lua, conf.lua, square.lua and the lib folder into an executable following [this official guide](https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable). Name it as you desire, but make sure to change the extension to .scr after fusing the executable.
 5) Place only your .scr file into C:\Windows\System32. Do not place any of the other files mentioned in the love2d guide there.
 6) In your screensaver settings, this screensaver will now appear! Be warned that it may appear as an unsigned app.
 
