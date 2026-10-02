@@ -1,13 +1,19 @@
+local border_x
+local border_y
 local desktop_width
-local desktop_height
-desktop_width, desktop_height = love.graphics.getPixelDimensions()
+
 local dpi = love.graphics.getDPIScale()
 local square
 local color_channels = {255, 255, 255}
 local changecolor = false
 local actuallydisplay = false
+local previewmodescale = 1/2.5
+local mode
 
 function love.load(args)
+
+    border_x, border_y = love.graphics.getPixelDimensions()
+    desktop_width = border_x --Since the program inits as fullscreen there's no difference as of yet.
 
     square = {
         x = 0,
@@ -17,22 +23,46 @@ function love.load(args)
         len = 150
     }
 
-    local mode = args[1]
-    mode = string.sub(mode, 1, 2) --Windows passes a longer string for "/c:....", only the first 2 characters are relevant.
+    mode = args[1]
+    if mode then
+        mode = string.lower(mode)
+        mode = string.sub(mode, 1, 2) --Windows passes a longer string for "/c:....", only the first 2 characters are relevant.
+    end
 
-    if mode == "/s" then
+    if mode == "/s" then --Actual screensaver mode
         actuallydisplay = true
+
+    elseif mode == "/p" then --Preview mode, gets called by windows when the screensaver is selected and/or the screensavers menu is loaded.
+        actuallydisplay = true
+
+        --Disable fullscreen, resize window and borders to be small
+        love.window.setFullscreen(false)
+        love.window.updateMode(border_x * previewmodescale, border_y * previewmodescale)
+        border_x, border_y = love.graphics.getPixelDimensions()
+
+        --Position window at the left of the screen and center it for height
+        local __, y = love.window.getPosition()
+        love.window.setPosition(desktop_width/2, y)
+
+        --Resize and re-speed the square based on the preview mode scale
+        for key, value in pairs(square) do
+            square[key] = value * previewmodescale
+        end
+
+        love.window.setTitle("Lovely Screensaver: Preview Mode!")
+
     end
 
     if not actuallydisplay then
+        print("The program chose not to be displayed!")
         love.window.setFullscreen(false)
         love.window.setMode(1, 1, {borderless = true})
         love.window.setPosition(-1, -1)
         --If the string doesn't end with long space, the error message is only partially displayed
-        if mode == "/p" then
-            love.window.showMessageBox("Whoops!", "Windows called \"/p\".\nPreview mode is unsupported.\nThis shows up a lot, sorry.                  ", "error")
-        elseif mode == "/c" then
+        if mode == "/c" then
             love.window.showMessageBox("Lovely Screensaver", "This screensaver has no configuration settings.             ", "info")
+        else
+            love.window.showMessageBox("Lovely Screensaver", "No correct argument was called!             ", "info")
         end
         love.event.quit()
     end
@@ -41,12 +71,14 @@ end
 
 function love.update(dt)
 
-    if square.x > desktop_width - square.len or square.x < 0 then
+    print("Ooh, an update loop!")
+
+    if square.x > border_x - square.len or square.x < 0 then
         square.vx = -square.vx
         changecolor = true
     end
 
-    if square.y > desktop_height - square.len or square.y < 0 then
+    if square.y > border_y - square.len or square.y < 0 then
         square.vy = -square.vy
         changecolor = true
     end
@@ -55,7 +87,7 @@ function love.update(dt)
 
     square.x = square.x + (square.vx * dt)
 
-    print(desktop_width, desktop_height)
+    print(border_x, border_y)
 
 end
 
@@ -79,19 +111,19 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    if key then
+    if key and mode ~= "/p" then
         love.event.quit()
     end
 end
 
 function love.mousepressed(key)
-    if key then
+    if key and mode ~= "/p" then
         love.event.quit()
     end
 end
 
 function love.mousemoved(__, __, dx, dy)
-    if dx ~= 0 or dy ~= 0 then
+    if (dx > 2 or dy > 2) and mode ~= "/p" then
         love.event.quit()
     end
 end
