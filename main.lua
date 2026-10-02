@@ -118,3 +118,9 @@ function love.mousemoved(__, __, dx, dy)
         love.event.quit()
     end
 end
+
+function love.focus(focus)
+    if mode == "/p" and not focus then
+        love.event.quit()
+    end
+end
