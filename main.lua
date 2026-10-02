@@ -7,8 +7,6 @@ local desktop_width
 
 local dpi = love.graphics.getDPIScale()
 local squares
-local color_channels = {255, 255, 255}
-local changecolor = false
 local actuallydisplay = false
 local previewmodescale = 1/2.5
 local mode
