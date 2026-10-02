@@ -49,7 +49,7 @@ function love.load(args)
             square[key] = value * previewmodescale
         end
 
-        love.window.setTitle("Lovely Screensaver: Preview Mode!")
+        love.window.setTitle("Lovely Screensaver: Windows Called Preview")
 
     end
 
@@ -96,13 +96,20 @@ function love.draw()
     love.graphics.push()
     love.graphics.scale(1/dpi, 1/dpi)
 
+    --Display info regarding the "preview" button.
+    if mode == "/p" then
+        love.graphics.setColor(1,1,1)
+        love.graphics.print("Windows-called preview mode.\nNot to be confused with the \"Preview\" button.")
+    end
+
     if changecolor then
         color_channels[1] = love.math.random(63,255)
         color_channels[2] = love.math.random(63,255)
         color_channels[3] = love.math.random(63,255)
-        love.graphics.setColor(color_channels[1]/255, color_channels[2]/255, color_channels[3]/255)
         changecolor = false
     end
+
+    love.graphics.setColor(color_channels[1]/255, color_channels[2]/255, color_channels[3]/255)
 
     love.graphics.rectangle("fill", square.x, square.y, square.len, square.len)
 
