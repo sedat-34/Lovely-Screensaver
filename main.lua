@@ -22,6 +22,8 @@ local mode
 
 function love.load(args)
 
+    love.mouse.setVisible(false)
+
     local font = love.graphics.newFont(30)
     love.graphics.setFont(font)
 
@@ -32,8 +34,8 @@ function love.load(args)
             savedata[iterator] = line
             iterator = iterator + 1
         end
-        if savedata[1] then squarecount = savedata[1] end
-        if savedata[2] then squarelength = savedata[2] end
+        if savedata[1] then squarecount = tonumber(savedata[1]) end
+        if savedata[2] then squarelength = tonumber(savedata[2]) end
     end
 
     border_x, border_y = love.window.getDesktopDimensions()
@@ -159,6 +161,7 @@ function love.draw()
         love.graphics.print("Hold up or down to change!", 0, 30)
         love.graphics.print("Length of squares (pixels): "..squarelength, 0, 60)
         love.graphics.print("Hold w to increase, s to decrease!", 0, 90)
+        love.graphics.print("Exiting auto-saves your preferences.", 0, 120)
 
     end
 
