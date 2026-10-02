@@ -14,7 +14,7 @@ The following table denotes what happens when an argument ("MODE") is passed by 
 |/p:xxxxx ("Preview")|Displays the screensaver in a window scaled down by a set factor|
 |/c:xxxxx ("Configure")|Displays an info box messaging that there is nothing to configure|
 
-## Compling and installing in Windows
+## Compiling and installing in Windows
 1) Install or download LÖVE 11.5.
 2) Add LÖVE to your path. The screensaver does not work otherwise as of now.
 3) In conf.lua, set a unique t.identity for your screensaver. This is for future compatibility.
