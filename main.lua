@@ -45,8 +45,9 @@ function love.load(args)
         --Resize and re-speed the square based on the preview mode scale
         for key, __ in pairs(squares) do
             for param, value in pairs(squares[key]) do
-                if type(value) ~= "number" then break end
-                squares[key][param] = value * previewmodescale
+                if type(value) == "number" then
+                    squares[key][param] = value * previewmodescale
+                end
             end
         end
 
@@ -99,18 +100,21 @@ end
 
 function love.keypressed(key)
     if key and mode == "/s" then
+        collectgarbage("collect")
         love.event.quit()
     end
 end
 
 function love.mousepressed(key)
     if key and mode == "/s" then
+        collectgarbage("collect")
         love.event.quit()
     end
 end
 
 function love.mousemoved(__, __, dx, dy)
     if (dx > 2 or dy > 2) and mode == "/s" then
+        collectgarbage("collect")
         love.event.quit()
     end
 end
