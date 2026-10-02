@@ -1,9 +1,12 @@
+Object = require "lib.classic"
+require "square"
+
 local border_x
 local border_y
 local desktop_width
 
 local dpi = love.graphics.getDPIScale()
-local square
+local squares
 local color_channels = {255, 255, 255}
 local changecolor = false
 local actuallydisplay = false
@@ -15,12 +18,9 @@ function love.load(args)
     border_x, border_y = love.graphics.getPixelDimensions()
     desktop_width = border_x --Since the program inits as fullscreen there's no difference as of yet.
 
-    square = {
-        x = 0,
-        y = 0,
-        vx = 350,
-        vy = 350,
-        len = 150
+    squares = {
+        Square(border_x, border_y),
+        Square(border_x, border_y),
     }
 
     mode = args[1]
@@ -45,11 +45,14 @@ function love.load(args)
         love.window.setPosition(desktop_width/2, y)
 
         --Resize and re-speed the square based on the preview mode scale
-        for key, value in pairs(square) do
-            square[key] = value * previewmodescale
+        for key, __ in pairs(squares) do
+            for param, value in pairs(squares[key]) do
+                if type(value) ~= "number" then break end
+                squares[key][param] = value * previewmodescale
+            end
         end
 
-        love.window.setTitle("Lovely Screensaver: Windows Called Preview")
+        love.window.setTitle("Lovely Screensaver: Windows-Called Preview")
 
     end
 
@@ -62,7 +65,7 @@ function love.load(args)
         if mode == "/c" then
             love.window.showMessageBox("Lovely Screensaver", "This screensaver has no configuration settings.             ", "info")
         else
-            love.window.showMessageBox("Lovely Screensaver", "No correct argument was called!             ", "info")
+            love.window.showMessageBox("Lovely Screensaver", "No correct argument was called! Try calling with /s!             ", "info")
         end
         love.event.quit()
     end
@@ -71,23 +74,9 @@ end
 
 function love.update(dt)
 
-    print("Ooh, an update loop!")
-
-    if square.x > border_x - square.len or square.x < 0 then
-        square.vx = -square.vx
-        changecolor = true
+    for square, __ in ipairs(squares) do
+        squares[square]:update(dt)
     end
-
-    if square.y > border_y - square.len or square.y < 0 then
-        square.vy = -square.vy
-        changecolor = true
-    end
-
-    square.y = square.y + (square.vy * dt)
-
-    square.x = square.x + (square.vx * dt)
-
-    print(border_x, border_y)
 
 end
 
@@ -102,35 +91,28 @@ function love.draw()
         love.graphics.print("Windows-called preview mode.\nNot to be confused with the \"Preview\" button.")
     end
 
-    if changecolor then
-        color_channels[1] = love.math.random(63,255)
-        color_channels[2] = love.math.random(63,255)
-        color_channels[3] = love.math.random(63,255)
-        changecolor = false
+    for square, __ in ipairs(squares) do
+        squares[square]:draw()
     end
-
-    love.graphics.setColor(color_channels[1]/255, color_channels[2]/255, color_channels[3]/255)
-
-    love.graphics.rectangle("fill", square.x, square.y, square.len, square.len)
 
     love.graphics.pop()
 
 end
 
 function love.keypressed(key)
-    if key and mode ~= "/p" then
+    if key and mode == "/s" then
         love.event.quit()
     end
 end
 
 function love.mousepressed(key)
-    if key and mode ~= "/p" then
+    if key and mode == "/s" then
         love.event.quit()
     end
 end
 
 function love.mousemoved(__, __, dx, dy)
-    if (dx > 2 or dy > 2) and mode ~= "/p" then
+    if (dx > 2 or dy > 2) and mode == "/s" then
         love.event.quit()
     end
 end
