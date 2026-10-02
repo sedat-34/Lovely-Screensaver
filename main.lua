@@ -150,7 +150,7 @@ function love.draw()
         end
         if mode == "/p" then
             love.graphics.setColor(1,0,0)
-            love.graphics.print("Windows-called preview mode.\nNot to be confused with the \"Preview\" button\nwhich actually calls \\s mode.")
+            love.graphics.print("Windows-called preview mode.")
         end
 
     elseif configtime then
