@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.window.fullscreen = true
+    t.fullscreen = false
     t.window.title = "Lovely Screensaver"
     t.identity = "lovelyscreensaver"
 end
