@@ -3,7 +3,9 @@ Made with [LÖVE2D](https://love2d.org)
 
 ## What is this?
 
-Lovely Screensaver is a very simple proof-of-concept screensaver made with LÖVE2D. It consists of squares bouncing across a black background when displayed.
+Lovely Screensaver is a very simple proof-of-concept screensaver made with LÖVE2D. It consists of squares bouncing across a black
+background when displayed. This is the second-ever LÖVE2D screensaver to support the Windows CLI for screensavers, and the first ever
+LÖVE2D screensaver to support all 3 Windows CLI arguments.
 
 The program handles Windows' standard screensaver arguments appropiately and displays either itself or a messagebox. 
 The following table denotes what happens when an argument ("MODE") is passed by Windows into the screensaver.
