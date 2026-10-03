@@ -7,9 +7,13 @@ local desktop_width
 
 local dpi = love.graphics.getDPIScale()
 local squares = {}
+
+--Default values for user configurations, doubles as failsaves.
 local squarecount = 40
 local squarelength = 150
+local displayWallpaper = 0
 local savefile = "savefile.txt"
+local configfont
 local savedata = {}
 
 local squarecounttimer = 0
@@ -22,7 +26,9 @@ local mode
 
 local starttime = os.time()
 --Fair assumption. Real FPS gets checked after first update.
-local deltatime = 1/60 
+local deltatime = 1/60
+
+local realWallPaper
 
 function love.load(args)
 
@@ -41,6 +47,7 @@ function love.load(args)
         end
         if savedata[1] then squarecount = tonumber(savedata[1], 10) end
         if savedata[2] then squarelength = tonumber(savedata[2], 10) end
+        if savedata[3] then displayWallpaper = tonumber(savedata[3], 10) end
     end
 
     border_x, border_y = love.window.getDesktopDimensions()
@@ -71,11 +78,6 @@ function love.load(args)
         local __, y = love.window.getPosition()
         love.window.setPosition(desktop_width/2, y)
 
-        --Resize and re-speed the square based on the preview mode scale
-        for key, __ in ipairs(squares) do
-            squares[key]:scaleparams(previewmodescale)
-        end
-
         love.window.setTitle("Lovely Screensaver: Windows-Called Preview")
 
     elseif mode == "/c" then
@@ -87,6 +89,27 @@ function love.load(args)
 
         love.window.setTitle("Lovely Wallpaper: Configuration \"Menu\"")
 
+    end
+
+    --Grab user wallpaper (only on demand!)
+    if displayWallpaper == 1 then
+            local getWp = assert(io.popen('powershell -Command "Get-ItemPropertyValue -Path \\"HKCU:\\Control Panel\\Desktop\\" -Name \\"WallPaper\\""'))
+            if getWp then
+            local wallpaperpath = getWp:read("L")
+            getWp:close()
+            local ext = wallpaperpath:match("^.+(%..+)$") --Match the file extension.
+
+            wallpaperpath = wallpaperpath:sub(1, -2)
+            local wallpaperfile = assert(io.open(wallpaperpath, "rb"))
+            if wallpaperfile then
+                local str = wallpaperfile:read("a")
+                wallpaperfile:close()
+
+                local filedata = love.filesystem.newFileData(str, "wallpaper"..ext)
+
+                realWallPaper = love.graphics.newImage(filedata)
+            end
+        end
     end
 
     if not (actuallydisplay or configtime) then
@@ -143,31 +166,51 @@ end
 
 function love.draw()
 
+    love.graphics.setColor(1,1,1)
+
     love.graphics.push()
-    love.graphics.scale(1/dpi, 1/dpi)
+
+    --Handle scaling per mode.
+    if mode == "/p" then
+        love.graphics.scale(1/dpi * previewmodescale, 1/dpi * previewmodescale)
+    else
+        love.graphics.scale(1/dpi, 1/dpi)
+    end
+
+    --Display the wallpaper (or not).
+    if mode ~= "/c" and displayWallpaper == 1 and realWallPaper then
+        if mode == "/s" then
+            love.graphics.draw(realWallPaper)
+
+        elseif mode =="/p" then
+            love.graphics.draw(realWallPaper)
+
+        end
+    end
 
     if actuallydisplay then
-        if mode == "/p" then
-            love.graphics.setColor(0,0,0)
-            love.graphics.rectangle("fill", 0, 0, border_x, border_y)
-        end
-        --Display info regarding the "preview" button.
         love.graphics.setColor(1,1,1)
         for square, __ in ipairs(squares) do
             squares[square]:draw()
         end
-        if mode == "/p" then
-            love.graphics.setColor(1,0,0)
-            love.graphics.print("Windows-called preview mode.")
-        end
 
     elseif configtime then
         love.graphics.setColor(0,1,1)
+        local step = love.graphics.getHeight()/15
+        if not configfont then
+            configfont = love.graphics.newFont(step)
+        end
+        love.graphics.setFont(configfont)
         love.graphics.print("Number of squares: "..squarecount)
-        love.graphics.print("Hold up or down to change!", 0, 30)
-        love.graphics.print("Length of squares (pixels): "..squarelength, 0, 60)
-        love.graphics.print("Hold w to increase, s to decrease!", 0, 90)
-        love.graphics.print("Exiting auto-saves your preferences.", 0, 120)
+        love.graphics.print("Hold up or down to change!", 0, step)
+        love.graphics.print("Length of squares (pixels): "..squarelength, 0, step*3)
+        love.graphics.print("Hold w to increase, s to decrease!", 0, step*4)
+        love.graphics.print("Display desktop wallpaper behind the squares: "..displayWallpaper, 0, step*6)
+        love.graphics.print("Press space to toggle. 0 = off, 1 = on", 0, step*7)
+        love.graphics.setColor(1,0,0)
+        love.graphics.print("Leaving this on may cause screen burn-in on OLEDs and CRTs.", 0, step*8)
+        love.graphics.setColor(0,1,1)
+        love.graphics.print("Exiting auto-saves your preferences.", 0, step*10)
 
     end
 
@@ -180,6 +223,14 @@ function love.keypressed(key)
     if key and mode == "/s" then
         collectgarbage("collect")
         love.event.quit()
+
+    --Toggle whether the wallpaper will be displayed next time the wp runs.
+    elseif key and mode == "/c" then
+        if key == "space" then
+            if displayWallpaper == 0 then displayWallpaper = 1
+            elseif displayWallpaper == 1 then displayWallpaper = 0
+            end
+        end
     end
 
 end
@@ -206,6 +257,6 @@ end
 
 function love.quit()
     if mode == "/c" then
-        love.filesystem.write(savefile, squarecount.."\r\n"..squarelength)
+        love.filesystem.write(savefile, squarecount.."\r\n"..squarelength.."\r\n"..displayWallpaper)
     end
 end

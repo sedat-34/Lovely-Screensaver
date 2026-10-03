@@ -48,11 +48,3 @@ function Square:draw()
     love.graphics.setColor(self.color_channels[1], self.color_channels[2], self.color_channels[3])
     love.graphics.rectangle("fill", self.x, self.y, self.len, self.len)
 end
-
-function Square:scaleparams(scale)
-    for k, v in pairs(self) do
-        if type(self[k]) == "number" then
-            self[k] = v * scale
-        end
-    end
-end
