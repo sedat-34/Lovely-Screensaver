@@ -26,6 +26,7 @@ function Square:update(dt)
             love.math.random(100, 255)/255,
             love.math.random(100, 255)/255,
         }
+        self.x = self.x + (math.abs(self.vx)/self.vx)
     end
 
     if self.y > self.border_y - self.len or self.y < 0 then
@@ -35,6 +36,7 @@ function Square:update(dt)
             love.math.random(100, 255)/255,
             love.math.random(100, 255)/255,
         }
+        self.y = self.y + (math.abs(self.vy)/self.vy)
     end
 
     self.y = self.y + (self.vy * dt)
