@@ -12,6 +12,8 @@ local squares = {}
 local squarecount = 40
 local squarelength = 150
 local displayWallpaper = 0
+local truewallpaperpath = ""
+local wallpaperextension = ""
 local savefile = "savefile.txt"
 local configfont
 local savedata = {}
@@ -48,6 +50,11 @@ function love.load(args)
         if savedata[1] then squarecount = tonumber(savedata[1], 10) end
         if savedata[2] then squarelength = tonumber(savedata[2], 10) end
         if savedata[3] then displayWallpaper = tonumber(savedata[3], 10) end
+        if savedata[4] then truewallpaperpath = savedata[4] end
+        if savedata[5] then wallpaperextension = savedata[5] end
+        for i, c in ipairs(savedata) do
+            print(c)
+        end
     end
 
     border_x, border_y = love.window.getDesktopDimensions()
@@ -92,24 +99,14 @@ function love.load(args)
     end
 
     --Grab user wallpaper (only on demand!)
-    if displayWallpaper == 1 then
-            local getWp = assert(io.popen('powershell -Command "Get-ItemPropertyValue -Path \\"HKCU:\\Control Panel\\Desktop\\" -Name \\"WallPaper\\""'))
-            if getWp then
-            local wallpaperpath = getWp:read("L")
-            getWp:close()
-            local ext = wallpaperpath:match("^.+(%..+)$") --Match the file extension.
-
-            wallpaperpath = wallpaperpath:sub(1, -2)
-            local wallpaperfile = assert(io.open(wallpaperpath, "rb"))
-            if wallpaperfile then
-                local str = wallpaperfile:read("a")
-                wallpaperfile:close()
-
-                local filedata = love.filesystem.newFileData(str, "wallpaper"..ext)
-
-                realWallPaper = love.graphics.newImage(filedata)
-            end
-        end
+    --Some of these conditions are for compatibility with old version save files. The images don't get loaded.
+    if mode ~= "/c" and displayWallpaper == 1 and truewallpaperpath and truewallpaperpath ~= "" and wallpaperextension and wallpaperextension ~= "" then
+        local wpFile = assert(io.open(truewallpaperpath, "rb"), "Your background was not found. Please toggle wallpaper display in the configuration menu (Settings button in the windows screensaver UI.). If that doesn't work, please raise an issue on github.")
+        print(wpFile)
+        local wpFileContents = wpFile:read("a")
+        wpFile:close()
+        local wpFileData = love.filesystem.newFileData(wpFileContents, "wallpaper"..wallpaperextension)
+        realWallPaper = love.graphics.newImage(wpFileData)
     end
 
     if not (actuallydisplay or configtime) then
@@ -207,10 +204,13 @@ function love.draw()
         love.graphics.print("Hold w to increase, s to decrease!", 0, step*4)
         love.graphics.print("Display desktop wallpaper behind the squares: "..displayWallpaper, 0, step*6)
         love.graphics.print("Press space to toggle. 0 = off, 1 = on", 0, step*7)
+        love.graphics.print("Toggle this whenever you change or delete your wallpaper or its file.", 0, step*8)
         love.graphics.setColor(1,0,0)
-        love.graphics.print("Leaving this on may cause screen burn-in on OLEDs and CRTs.", 0, step*8)
-        love.graphics.setColor(0,1,1)
-        love.graphics.print("Exiting auto-saves your preferences.", 0, step*10)
+        love.graphics.print("Leaving this on may cause screen burn-in on OLEDs and CRTs.", 0, step*9)
+        love.graphics.setColor(0,1,0)
+        love.graphics.print("Exiting auto-saves your preferences.", 0, step*11)
+        love.graphics.setColor(1,0,1)
+        love.graphics.print("Lovely-Screensaver (c) Sedat Ariturk. See LICENSE, README.", 0, step*16)
 
     end
 
@@ -227,9 +227,18 @@ function love.keypressed(key)
     --Toggle whether the wallpaper will be displayed next time the wp runs.
     elseif key and mode == "/c" then
         if key == "space" then
-            if displayWallpaper == 0 then displayWallpaper = 1
-            elseif displayWallpaper == 1 then displayWallpaper = 0
-            end
+                if displayWallpaper == 0 then displayWallpaper = 1
+                    local getWp = assert(io.popen('powershell -Command "Get-ItemPropertyValue -Path \\"HKCU:\\Control Panel\\Desktop\\" -Name \\"WallPaper\\""'))
+                    if getWp then
+                    truewallpaperpath = getWp:read("L")
+                    getWp:close()
+                    wallpaperextension = truewallpaperpath:match("^.+(%..+)$") --Match the file extension.
+                    truewallpaperpath = truewallpaperpath:sub(1, -2)
+                    end
+                elseif displayWallpaper == 1 then displayWallpaper = 0
+                    truewallpaperpath = ""
+                    wallpaperextension = ""
+                end
         end
     end
 
@@ -257,6 +266,7 @@ end
 
 function love.quit()
     if mode == "/c" then
-        love.filesystem.write(savefile, squarecount.."\r\n"..squarelength.."\r\n"..displayWallpaper)
+        love.filesystem.write(savefile, squarecount.."\r\n"..squarelength.."\r\n"..displayWallpaper.."\r\n"..truewallpaperpath.."\r\n"..wallpaperextension)
+        print(savefile, squarecount.."\r\n"..squarelength.."\r\n"..displayWallpaper.."\r\n"..truewallpaperpath.."\r\n"..wallpaperextension)
     end
 end
