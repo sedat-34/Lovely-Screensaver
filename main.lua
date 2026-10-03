@@ -78,8 +78,6 @@ function love.load(args)
 
     arguments = args
 
-    love.mouse.setVisible(false)
-
     local font = love.graphics.newFont(30)
     love.graphics.setFont(font)
 
@@ -117,6 +115,7 @@ function love.load(args)
 
     if mode == "/s" then --Actual screensaver mode
         love.window.setFullscreen(true)
+        love.mouse.setVisible(false)
         actuallydisplay = true
 
     elseif mode == "/p" then --Preview mode, gets called by windows when the screensaver is selected and/or the screensavers menu is loaded.
@@ -285,7 +284,8 @@ function love.keypressed(key)
                     truewallpaperpath = getWp:read("L")
                     getWp:close()
                     wallpaperextension = truewallpaperpath:match("^.+(%..+)$") --Match the file extension.
-                    truewallpaperpath = truewallpaperpath:sub(1, -2)
+                    truewallpaperpath = string.gsub(truewallpaperpath, "[\r\n]", "") --The newlines created by the Powershell output
+                    print(truewallpaperpath)
                     end
                 elseif displayWallpaper == 1 then displayWallpaper = 0
                     truewallpaperpath = ""
