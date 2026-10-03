@@ -26,6 +26,7 @@ require "square"
 local border_x
 local border_y
 local desktop_width
+local desktop_height
 
 local dpi = love.graphics.getDPIScale()
 local squares = {}
@@ -100,7 +101,8 @@ function love.load(args)
     end
 
     border_x, border_y = love.window.getDesktopDimensions()
-    desktop_width = border_x --border_x is initially the screen width, it's the same value
+    love.window.setPosition(-border_x-1,-border_y-1)
+    desktop_width, desktop_height = border_x, border_y
 
     for i = 1, squarecount do
         squares[i] = Square(border_x, border_y, squarelength)
@@ -114,6 +116,7 @@ function love.load(args)
     if arguments[2] then ProvidedHWND = arguments[2] end
 
     if mode == "/s" then --Actual screensaver mode
+        love.window.setPosition(0,0)
         love.window.setFullscreen(true)
         love.mouse.setVisible(false)
         actuallydisplay = true
@@ -140,9 +143,9 @@ function love.load(args)
     elseif mode == "/c" then
         configtime = true
         love.window.updateMode(border_x * previewmodescale, border_y * previewmodescale)
-        --Position window at the left of the screen and center it for height
-        local __, y = love.window.getPosition()
-        love.window.setPosition(desktop_width/2, y)
+        --Center the configuration window on the screen.
+        local windowWidth, windowHeight = love.graphics.getPixelDimensions()
+        love.window.setPosition(desktop_width/2 - windowWidth/2 , desktop_height/2 - windowHeight/2)
 
         love.window.setTitle("Lovely Wallpaper: Configuration \"Menu\"")
 
@@ -273,7 +276,7 @@ function love.keypressed(key)
 
     if key and mode == "/s" then
         collectgarbage("collect")
-        love.event.quift()
+        love.event.quit()
 
     --Toggle whether the wallpaper will be displayed next time the wp runs.
     elseif key and mode == "/c" then
