@@ -20,6 +20,10 @@ local previewmodescale = 1/2.5
 
 local mode
 
+local starttime = os.time()
+--Fair assumption. Real FPS gets checked after first update.
+local deltatime = 1/60 
+
 function love.load(args)
 
     love.mouse.setVisible(false)
@@ -27,6 +31,7 @@ function love.load(args)
     local font = love.graphics.newFont(30)
     love.graphics.setFont(font)
 
+    --Read and interpret the saved configurations. This method is not ideal for many customizations.
     if love.filesystem.read(savefile) then
 
         local iterator = 1
@@ -34,8 +39,8 @@ function love.load(args)
             savedata[iterator] = line
             iterator = iterator + 1
         end
-        if savedata[1] then squarecount = tonumber(savedata[1]) end
-        if savedata[2] then squarelength = tonumber(savedata[2]) end
+        if savedata[1] then squarecount = tonumber(savedata[1], 10) end
+        if savedata[2] then squarelength = tonumber(savedata[2], 10) end
     end
 
     border_x, border_y = love.window.getDesktopDimensions()
@@ -133,6 +138,7 @@ function love.update(dt)
         end
 
     end
+    deltatime = dt
 end
 
 function love.draw()
@@ -186,7 +192,7 @@ function love.mousepressed(key)
 end
 
 function love.mousemoved(__, __, dx, dy)
-    if (dx > 2 or dy > 2) and mode == "/s" then
+    if (dx > 2 or dy > 2) and mode == "/s" and os.time() - starttime >= 3*deltatime then
         collectgarbage("collect")
         love.event.quit()
     end
