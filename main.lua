@@ -1,6 +1,6 @@
 Object = require "lib.classic"
 
---FFI's only purpose here is to grab the id of the preview window and pretend to project the window onto it
+--FFI's only purpose here is to grab the id of the preview window so thee screensaver pretends to display within it.
 local ffi = require("ffi")
 
 ffi.cdef[[
@@ -129,7 +129,7 @@ function love.load(args)
         local newWindowInfo = getWindowRect(ProvidedHWND) --Returns a table generated from a C struct.
         if not newWindowInfo then assert(nil, ProvidedHWND) end
 
-        --The image is warped, but there is no clean solution to this.
+        --The image is warped in a screen ratio mismatch scenario, but there is no clean solution to this.
         previewmodescaleX = newWindowInfo.width/border_x
         previewmodescaleY = newWindowInfo.height/border_y
 
@@ -264,7 +264,8 @@ function love.draw()
         love.graphics.setColor(0,1,0)
         love.graphics.print("Exiting auto-saves your preferences.", 0, step*11)
         love.graphics.setColor(1,0,1)
-        love.graphics.print("Lovely-Screensaver (c) Sedat Ariturk. See LICENSE, README.", 0, step*16)
+        love.graphics.print("Lovely-Screensaver (c) 2026 Sedat Ariturk", 0, step*15)
+        love.graphics.print("See LICENSE, README, love-license", 0, step*16)
 
     end
 

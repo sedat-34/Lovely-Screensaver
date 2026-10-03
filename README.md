@@ -1,5 +1,6 @@
 # Lovely Screensaver
 Made with [LÖVE2D](https://love2d.org)
+In all distributions (releases), please check love-license.txt for the original, unmodified license of LÖVE2D and its components.
 
 ## What is this?
 
@@ -16,13 +17,13 @@ The following table denotes what happens when an argument ("MODE") is passed by 
 
 Attempting to load any other argument or load with no argument results in an info message regarding arguments. This shouldn't be visible unless the program is executed outside the Windows Screensaver logic
 
-## Compiling and installing in Windows
-1) Install or download LÖVE 11.5.
-2) Add LÖVE to your path. The screensaver does not work otherwise as of now.
-3) Package main.lua, conf.lua, square.lua and the lib folder into an executable following [this official guide](https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable). Name it as you desire, but make sure to change the extension to .scr after fusing the executable.
-4) Place only your .scr file into C:\Windows\System32. Do not place any of the other files mentioned in the love2d guide there. You will need administrator permissions.
-5) In your screensaver settings, this screensaver will now appear! Be warned that it may appear as an unsigned app.
-6) To delete the screensaver, simply delete the .scr file from System32.
+## Installing in Windows
+1) Download the screensaver software from the Relases tab.
+2) Extract the contents into any folder you wish.
+3) Right click the .scr to install. You may get a UAC warning. If you do not trust the .scr, you may check the code within the file with any zip software (such as 7zip)
+    * If you move the contents later, you will need to restart from this step.
+4) Check Windows' screensaver settings. You should be able to change the Settings or enable fullscreen Preview.
+5) To uninstall, simply delete the folder the screensaver is in.
 
 ## Other OSs
 Operating systems other than Windows are not planned for support. This is because the APIs vary too much between different systems to package in one proof-of-concept. 
