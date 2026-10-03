@@ -1,4 +1,26 @@
 Object = require "lib.classic"
+
+--FFI's only purpose here is to grab the id of the preview window and pretend to project the window onto it
+local ffi = require("ffi")
+
+ffi.cdef[[
+
+    typedef void* HWND;
+    typedef int BOOL;
+
+    typedef struct {
+        int left;
+        int top;
+        int right;
+        int bottom;
+    } RECT, *LPRECT;
+
+    BOOL GetWindowRect(HWND hWnd, LPRECT lpRect);
+
+]]
+
+local user32 = ffi.load("user32")
+
 require "square"
 
 local border_x
@@ -22,9 +44,13 @@ local squarecounttimer = 0
 
 local actuallydisplay = false
 local configtime = false
-local previewmodescale = 1/2.5
+local previewmodescale = 1/2.5 --legacy variable, kept for /c mode.
+local previewmodescaleX
+local previewmodescaleY
 
 local mode
+local arguments
+local ProvidedHWND
 
 local starttime = os.time()
 --Fair assumption. Real FPS gets checked after first update.
@@ -32,7 +58,25 @@ local deltatime = 1/60
 
 local realWallPaper
 
+local function getWindowRect(hwnd)
+    --Convert hwnd from string to void*
+    local fakeHWND = tonumber(hwnd)
+    local trueHWND = ffi.cast("HWND", fakeHWND)
+    local rect = ffi.new("RECT") --init blank rect object
+    local success = user32.GetWindowRect(trueHWND, rect) --rect now carries the info from the window of the HWND
+    if success ~= 0 then
+        return {
+            x = rect.left,
+            y = rect.top,
+            width = rect.right - rect.left,
+            height = rect.bottom - rect.top
+        }
+    end
+end
+
 function love.load(args)
+
+    arguments = args
 
     love.mouse.setVisible(false)
 
@@ -64,11 +108,12 @@ function love.load(args)
         squares[i] = Square(border_x, border_y, squarelength)
     end
 
-    mode = args[1]
+    mode = arguments[1]
     if mode then
         mode = string.lower(mode)
         mode = string.sub(mode, 1, 2) --Windows passes a longer string for "/c:....", only the first 2 characters are relevant.
     end
+    if arguments[2] then ProvidedHWND = arguments[2] end
 
     if mode == "/s" then --Actual screensaver mode
         love.window.setFullscreen(true)
@@ -77,13 +122,19 @@ function love.load(args)
     elseif mode == "/p" then --Preview mode, gets called by windows when the screensaver is selected and/or the screensavers menu is loaded.
         actuallydisplay = true
 
-        --Disable fullscreen, resize window and borders to be small
-        love.window.updateMode(border_x * previewmodescale, border_y * previewmodescale)
-        border_x, border_y = love.graphics.getPixelDimensions()
+        --Can't run a preview when not previewing. Shocker.
+        if not ProvidedHWND then assert(nil, "No ProvidedHWND!") end
+        local newWindowInfo = getWindowRect(ProvidedHWND) --Returns a table generated from a C struct.
+        if not newWindowInfo then assert(nil, ProvidedHWND) end
 
-        --Position window at the left of the screen and center it for height
-        local __, y = love.window.getPosition()
-        love.window.setPosition(desktop_width/2, y)
+        --The image is warped, but there is no clean solution to this.
+        previewmodescaleX = newWindowInfo.width/border_x
+        previewmodescaleY = newWindowInfo.height/border_y
+
+        --Pretend the tiny window is used, actually put a small window where the window is of it like a boss.
+        love.window.updateMode(newWindowInfo.width, newWindowInfo.height, {borderless = true})
+        love.window.setPosition(newWindowInfo.x, newWindowInfo.y)
+        border_x, border_y = love.graphics.getPixelDimensions()
 
         love.window.setTitle("Lovely Screensaver: Windows-Called Preview")
 
@@ -162,6 +213,7 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.setColor(1,1,0)
 
     love.graphics.setColor(1,1,1)
 
@@ -169,7 +221,7 @@ function love.draw()
 
     --Handle scaling per mode.
     if mode == "/p" then
-        love.graphics.scale(1/dpi * previewmodescale, 1/dpi * previewmodescale)
+        love.graphics.scale(1/dpi * previewmodescaleX, 1/dpi * previewmodescaleY)
     else
         love.graphics.scale(1/dpi, 1/dpi)
     end
@@ -222,7 +274,7 @@ function love.keypressed(key)
 
     if key and mode == "/s" then
         collectgarbage("collect")
-        love.event.quit()
+        love.event.quift()
 
     --Toggle whether the wallpaper will be displayed next time the wp runs.
     elseif key and mode == "/c" then
